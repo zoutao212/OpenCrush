@@ -1,0 +1,15 @@
+OpenCrush is a Go-based terminal-first AI coding assistant. `main.go` and
+`internal/cmd` own CLI and TUI startup, non-interactive `run`, working
+directory resolution, data directory setup, project registration, and app
+composition. `internal/config` owns layered config loading, working-directory
+defaults, project `.crush` data resolution, and global config/data overrides.
+`internal/app` wires sessions, messages, permissions, database access, and LSP
+management. `internal/agent` builds the coder agent prompt and tools, and the
+core shell, edit, view, grep, write, and LSP flows are all scoped to the
+active working directory. The current maintenance direction is to reduce
+environment coupling and stale helper logic; the Windows dev launcher added
+here keeps `--cwd` explicit and isolates dev config/data so source-based runs do
+not interfere with an installed Crush environment. On Windows the launcher
+validates the working directory via `pushd` instead of quoted `NUL` checks, to
+avoid false negatives from `cmd.exe` path parsing.
+

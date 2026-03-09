@@ -655,10 +655,15 @@ func (c *coordinator) buildVercelProvider(_, apiKey string, headers map[string]s
 	return vercel.New(opts...)
 }
 
-func (c *coordinator) buildOpenaiCompatProvider(baseURL, apiKey string, headers map[string]string, extraBody map[string]any, providerID string, isSubAgent bool) (fantasy.Provider, error) {
+func (c *coordinator) buildOpenaiCompatProvider(baseURL, apiKey string, headers map[string]string, extraBody map[string]any, providerID string, isSubAgent bool, apiProtocol string) (fantasy.Provider, error) {
 	opts := []openaicompat.Option{
 		openaicompat.WithBaseURL(baseURL),
 		openaicompat.WithAPIKey(apiKey),
+	}
+
+	// Enable Responses API for providers that declare it
+	if apiProtocol == "openai-responses" {
+		opts = append(opts, openaicompat.WithUseResponsesAPI())
 	}
 
 	// Set HTTP client based on provider and debug mode.
@@ -829,7 +834,7 @@ func (c *coordinator) buildProvider(providerCfg config.ProviderConfig, model con
 			}
 			providerCfg.ExtraBody["tool_stream"] = true
 		}
-		return c.buildOpenaiCompatProvider(baseURL, apiKey, headers, providerCfg.ExtraBody, providerCfg.ID, isSubAgent)
+		return c.buildOpenaiCompatProvider(baseURL, apiKey, headers, providerCfg.ExtraBody, providerCfg.ID, isSubAgent, providerCfg.API)
 	case hyper.Name:
 		return c.buildHyperProvider(baseURL, apiKey)
 	default:

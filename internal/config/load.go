@@ -631,6 +631,11 @@ func lookupConfigs(cwd string) []string {
 		GlobalConfigData(),
 	}
 
+	// Add opencode config compatibility path
+	if opencodeConfig := getOpencodeConfig(); opencodeConfig != "" {
+		configPaths = append(configPaths, opencodeConfig)
+	}
+
 	configNames := []string{appName + ".json", "." + appName + ".json"}
 
 	foundConfigs, err := fsext.Lookup(cwd, configNames...)
@@ -743,6 +748,15 @@ func GlobalConfigData() string {
 	}
 
 	return filepath.Join(home.Dir(), ".local", "share", appName, fmt.Sprintf("%s.json", appName))
+}
+
+// getOpencodeConfig returns the opencode config path if it exists
+func getOpencodeConfig() string {
+	opencodeConfig := filepath.Join(home.Dir(), ".config", "opencode", "opencode.json")
+	if _, err := os.Stat(opencodeConfig); err == nil {
+		return opencodeConfig
+	}
+	return ""
 }
 
 func assignIfNil[T any](ptr **T, val T) {

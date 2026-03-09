@@ -105,6 +105,8 @@ type ProviderConfig struct {
 	Type catwalk.Type `json:"type,omitempty" jsonschema:"description=Provider type that determines the API format,enum=openai,enum=openai-compat,enum=anthropic,enum=gemini,enum=azure,enum=vertexai,default=openai"`
 	// The provider's API key.
 	APIKey string `json:"api_key,omitempty" jsonschema:"description=API key for authentication with the provider,example=$OPENAI_API_KEY"`
+	// The API protocol to use, e.g. "openai-responses".
+	API string `json:"api,omitempty" jsonschema:"description=API protocol to use,enum=openai-responses,example=openai-responses"`
 	// The original API key template before resolution (for re-resolution on auth errors).
 	APIKeyTemplate string `json:"-"`
 	// OAuthToken for providers that use OAuth2 authentication.
@@ -803,6 +805,11 @@ func (c *ProviderConfig) TestConnection(resolver VariableResolver) error {
 
 	switch c.Type {
 	case catwalk.TypeOpenAI, catwalk.TypeOpenAICompat, catwalk.TypeOpenRouter:
+		// Skip connection test for providers that only support Responses API
+		if c.API == "openai-responses" {
+			return nil
+		}
+
 		baseURL, _ := resolver.ResolveValue(c.BaseURL)
 		baseURL = cmp.Or(baseURL, "https://api.openai.com/v1")
 
